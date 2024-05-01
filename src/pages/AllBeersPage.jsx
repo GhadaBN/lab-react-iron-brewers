@@ -1,17 +1,19 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Search from "../components/Search";
-import beersJSON from "./../assets/beers.json";
 import axios from "axios";
 
 const API_URL = "https://ih-beers-api2.herokuapp.com/beers";
 
 function AllBeersPage() {
+  //store Beers API in this state variable.
   const [beers, setBeers] = useState([]);
-
+  const [query, setQuery] = useState("");
+  // 1. Set up an effect hook to make a request to the Beers API and get the list
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // 2. Use axios to make a HTTP request.
         const response = await axios.get(API_URL);
         console.log("response.data", response.data);
         setBeers(response.data);
@@ -19,14 +21,30 @@ function AllBeersPage() {
         console.log(error);
       }
     };
-
+    // 3. Use the response data from the Beers API to update the state variable.
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchSearchedBeers = async () => {
+      try {
+        const response = await axios.get(API_URL + `/search?q=${query}`);
+
+        setBeers(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchSearchedBeers();
+  }, [query]);
+
+  const searchHandler = (string) => {
+    setQuery(string);
+  };
   return (
     <>
-      <Search />
-
+      <Search searchHandler={searchHandler} />
       <div className="d-inline-flex flex-wrap justify-content-center align-items-center w-100 p-4">
         {beers &&
           beers.map((beer, i) => {
